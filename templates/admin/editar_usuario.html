@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuário - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-gear"></i> Editar Usuário: {{ usuario.nome }}
+                    </h4>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('admin_editar_usuario', id=usuario.id) }}" class="needs-validation" novalidate>
+                        <!-- Dados Básicos -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Dados Básicos</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="nome" class="form-label">Nome Completo</label>
+                                    <input type="text" class="form-control" id="nome" name="nome" 
+                                           value="{{ usuario.nome }}" required>
+                                    <div class="invalid-feedback">
+                                        Por favor, informe o nome do usuário.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ usuario.email }}" required>
+                                    <div class="invalid-feedback">
+                                        Por favor, informe um email válido.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Configurações de Acesso -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Configurações de Acesso</h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="admin" name="admin" 
+                                               {{ 'checked' if usuario.is_admin }}>
+                                        <label class="form-check-label" for="admin">Administrador</label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
+                                               {{ 'checked' if usuario.ativo }}>
+                                        <label class="form-check-label" for="ativo">Usuário Ativo</label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nova_senha" class="form-label">Nova Senha (opcional)</label>
+                                        <input type="password" class="form-control" id="nova_senha" name="nova_senha">
+                                        <small class="text-muted">Deixe em branco para manter a senha atual</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações Adicionais -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Informações Adicionais</h5>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Data de Cadastro</label>
+                                <p class="form-control-plaintext">{{ usuario.data_cadastro|format_datetime }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">ID do Usuário</label>
+                                <p class="form-control-plaintext">{{ usuario.id }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('admin_usuarios') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Voltar
+                            </a>
+                            
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save"></i> Salvar Alterações
+                                </button>
+                                
+                                <a href="{{ url_for('admin_toggle_usuario', id=usuario.id) }}" 
+                                   class="btn btn-{{ 'warning' if usuario.ativo else 'success' }} ms-2">
+                                    <i class="bi bi-person-{{ 'x' if usuario.ativo else 'check' }}"></i>
+                                    {{ 'Desativar' if usuario.ativo else 'Ativar' }}
+                                </a>
+                                
+                                {% if not usuario.is_admin %}
+                                <a href="{{ url_for('admin_tornar_admin', id=usuario.id) }}" 
+                                   class="btn btn-info ms-2">
+                                    <i class="bi bi-shield-shaded"></i> Tornar Admin
+                                </a>
+                                {% endif %}
+                                
+                                <a href="{{ url_for('admin_remover_usuario', id=usuario.id) }}" 
+                                   class="btn btn-danger ms-2" 
+                                   onclick="return confirm('Tem certeza que deseja excluir permanentemente este usuário?')">
+                                    <i class="bi bi-trash"></i> Excluir
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Validação do formulário
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+    });
+    
+    // Confirmação para ações importantes
+    document.querySelectorAll('[data-confirm]').forEach(element => {
+        element.addEventListener('click', function(e) {
+            if (!confirm(this.dataset.confirm)) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

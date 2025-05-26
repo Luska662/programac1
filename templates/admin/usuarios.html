@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Gestão de Usuários - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Gestão de Usuários</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <i class="bi bi-people-fill"></i> Lista de Usuários
+                </div>
+                <div class="col-md-6">
+                    <form class="d-flex" method="GET" action="{{ url_for('admin_usuarios') }}">
+                        <input class="form-control me-2" type="search" name="busca" placeholder="Buscar usuários..." 
+                               value="{{ request.args.get('busca', '') }}">
+                        <button class="btn btn-light" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if not usuarios %}
+                <div class="alert alert-warning">
+                    Nenhum usuário encontrado no sistema.
+                    {% if request.args.get('busca') %}
+                        <a href="{{ url_for('admin_usuarios') }}" class="alert-link">
+                            Limpar busca
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Cadastro</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>{{ usuario.id }}</td>
+                                <td>{{ usuario.nome }}</td>
+                                <td>{{ usuario.email }}</td>
+                                <td>{{ usuario.data_cadastro|format_datetime }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if usuario.is_admin %}bg-danger
+                                        {% else %}bg-secondary
+                                        {% endif %}">
+                                        {% if usuario.is_admin %}Admin{% else %}Cliente{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if usuario.ativo %}bg-success
+                                        {% else %}bg-warning
+                                        {% endif %}">
+                                        {% if usuario.ativo %}Ativo{% else %}Inativo{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('admin_editar_usuario', id=usuario.id) }}" 
+                                           class="btn btn-outline-primary" 
+                                           title="Editar"
+                                           data-bs-toggle="tooltip">
+                                            <i class="bi bi-pencil-fill"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-secondary dropdown-toggle" 
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i class="bi bi-gear-fill"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" 
+                                                   href="{{ url_for('admin_editar_usuario', id=usuario.id) }}">
+                                                    <i class="bi bi-pencil me-2"></i>Editar
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            {% if usuario.ativo %}
+                                            <li>
+                                                <a class="dropdown-item text-warning" 
+                                                   href="{{ url_for('admin_toggle_usuario', id=usuario.id) }}">
+                                                    <i class="bi bi-person-x me-2"></i>Desativar
+                                                </a>
+                                            </li>
+                                            {% else %}
+                                            <li>
+                                                <a class="dropdown-item text-success" 
+                                                   href="{{ url_for('admin_toggle_usuario', id=usuario.id) }}">
+                                                    <i class="bi bi-person-check me-2"></i>Ativar
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            {% if not usuario.is_admin %}
+                                            <li>
+                                                <a class="dropdown-item text-info" 
+                                                   href="{{ url_for('admin_tornar_admin', id=usuario.id) }}">
+                                                    <i class="bi bi-shield-shaded me-2"></i>Tornar Admin
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            <li>
+                                                <a class="dropdown-item text-danger" 
+                                                   href="{{ url_for('admin_remover_usuario', id=usuario.id) }}"
+                                                   onclick="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')">
+                                                    <i class="bi bi-trash me-2"></i>Excluir
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                {% if pagination.pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_usuarios', page=pagination.prev_num, busca=request.args.get('busca', '')) }}">
+                                &laquo; Anterior
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in pagination.iter_pages() %}
+                            {% if page_num %}
+                                <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('admin_usuarios', page=page_num, busca=request.args.get('busca', '')) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin_usuarios', page=pagination.next_num, busca=request.args.get('busca', '')) }}">
+                                Próxima &raquo;
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{{ url_for('admin_cadastrar_usuario') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Adicionar Novo Usuário
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmação para exclusão
+    document.querySelectorAll('.dropdown-menu a.text-danger').forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (!confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Atualiza tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

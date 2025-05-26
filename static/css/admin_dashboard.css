@@ -1,0 +1,168 @@
+/* Estilos específicos para o dashboard administrativo */
+
+/* Botões de navegação rápida */
+.nav-buttons {
+    margin-bottom: 1.5rem;
+}
+
+.nav-btn {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
+.nav-btn i {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+}
+
+/* Cards de estatísticas */
+.stat-card {
+    border-left: 0.25rem solid;
+    border-radius: 0.35rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+}
+
+.stat-card .stat-card-icon {
+    font-size: 2rem;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover .stat-card-icon {
+    opacity: 0.7;
+}
+
+.stat-card.primary {
+    border-left-color: var(--primary-color);
+}
+
+.stat-card.success {
+    border-left-color: var(--secondary-color);
+}
+
+.stat-card.warning {
+    border-left-color: var(--warning-color);
+}
+
+.stat-card.danger {
+    border-left-color: var(--danger-color);
+}
+
+/* Área de gráficos */
+.chart-area {
+    position: relative;
+    height: 10rem;
+    width: 100%;
+}
+
+.chart-pie {
+    position: relative;
+    height: 15rem;
+}
+
+@media (min-width: 768px) {
+    .chart-area {
+        height: 20rem;
+    }
+}
+
+/* Tabelas */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table th {
+    white-space: nowrap;
+    position: relative;
+}
+
+.table th:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.1) 100%);
+}
+
+/* Botão de gerar relatório */
+#generateReport {
+    transition: all 0.3s ease;
+}
+
+#generateReport:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Badges */
+.badge {
+    font-size: 0.85em;
+    font-weight: 600;
+    padding: 0.35em 0.65em;
+}
+
+/* Elementos que serão usados apenas para o relatório */
+.user-name,
+.sales-total,
+.orders-total,
+.pending-orders,
+.total-products {
+    display: none !important;
+}
+
+/* Ícone do Excel */
+.fa-file-excel {
+    color: #1d6f42 !important;
+}
+
+/* Botão de gerar relatório */
+#generateReport {
+    background-color: #1d6f42;
+    border-color: #1a633b;
+}
+
+#generateReport:hover {
+    background-color: #1a633b;
+    border-color: #165732;
+}
+
+/* Estilo para os botões de exportação */
+.btn-export {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-export i {
+    margin-right: 0.5rem;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}

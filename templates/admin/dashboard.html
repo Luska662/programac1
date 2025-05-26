@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="report-content">
+    <!-- Elementos ocultos para o relatório XLSX -->
+    <div class="user-name" style="display:none;">{{ session.usuario_nome }}</div>
+    <div class="sales-total" style="display:none;">{{ "%.2f"|format(estatisticas.vendas_totais) }}</div>
+    <div class="orders-total" style="display:none;">{{ estatisticas.total_pedidos }}</div>
+    <div class="pending-orders" style="display:none;">{{ estatisticas.pedidos_pendentes }}</div>
+    <div class="total-products" style="display:none;">{{ estatisticas.total_produtos }}</div>
+
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+        <div>
+            <a href="{{ url_for('exportar_relatorio_completo') }}" class="btn btn-success shadow-sm mr-2">
+                <i class="fas fa-database"></i> Exportar BD Completo
+            </a>
+            <a href="#" class="btn btn-primary shadow-sm" id="generateReport">
+                <i class="fas fa-file-excel"></i> Gerar Relatório
+            </a>
+        </div>
+    </div>
+    
+    <!-- Botões de Navegação Rápida -->
+    <div class="row nav-buttons">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a href="{{ url_for('admin_produtos') }}" class="btn btn-info nav-btn">
+                <i class="fas fa-boxes"></i> Gerenciar Produtos
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a href="{{ url_for('admin_pedidos') }}" class="btn btn-warning nav-btn">
+                <i class="fas fa-shopping-bag"></i> Gerenciar Pedidos
+            </a>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-3">
+            <a href="{{ url_for('admin_usuarios') }}" class="btn btn-success nav-btn">
+                <i class="fas fa-users"></i> Gerenciar Usuários
+            </a>
+        </div>
+    </div>
+    
+    <!-- Content Row -->
+    <div class="row">
+        <!-- Cards de Estatísticas -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card primary h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Vendas Totais</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 sales-total-display">R$ {{ "%.2f"|format(estatisticas.vendas_totais) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign stat-card-icon text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card success h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total de Pedidos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 orders-total-display">{{ estatisticas.total_pedidos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-bag stat-card-icon text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card warning h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Pedidos Pendentes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 pending-orders-display">{{ estatisticas.pedidos_pendentes }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock stat-card-icon text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card stat-card danger h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Total de Produtos</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800 total-products-display">{{ estatisticas.total_produtos }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-box-open stat-card-icon text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos -->
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Visão Geral das Vendas</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Opções:</div>
+                            <a class="dropdown-item" href="#" id="exportSalesData">Exportar Dados</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" id="refreshSalesChart">Atualizar Gráfico</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Distribuição por Categoria</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Opções:</div>
+                            <a class="dropdown-item" href="#" id="exportCategoriesData">Exportar Dados</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4 pb-2">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center small">
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-primary"></i> Eletrônicos
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-success"></i> Roupas
+                        </span>
+                        <span class="mr-2">
+                            <i class="fas fa-circle text-info"></i> Acessórios
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabelas -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Últimos Pedidos</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="orders-table" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Pedido #</th>
+                                    <th>Data</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pedido in ultimos_pedidos %}
+                                <tr>
+                                    <td><a href="{{ url_for('admin_detalhes_pedido', pedido_id=pedido.id) }}">#{{ pedido.id }}</a></td>
+                                    <td>{{ pedido.data_pedido|format_datetime }}</td>
+                                    <td>{{ pedido.cliente }}</td>
+                                    <td>R$ {{ "%.2f"|format(pedido.total) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'warning' if pedido.status == 'pendente' else 'info' if pedido.status == 'processando' else 'primary' if pedido.status == 'enviado' else 'success' if pedido.status == 'entregue' else 'danger' }}">
+                                            {{ pedido.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('admin_pedidos') }}" class="btn btn-primary btn-block mt-2">Ver Todos os Pedidos</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Produtos com Baixo Estoque</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="products-table" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Estoque</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produto in produtos_baixo_estoque %}
+                                <tr>
+                                    <td>{{ produto.nome }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'danger' if produto.estoque < 3 else 'warning' }}">
+                                            {{ produto.estoque }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('admin_editar_produto', id=produto.id) }}" class="btn btn-sm btn-primary">Repor</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <a href="{{ url_for('admin_produtos') }}" class="btn btn-primary btn-block mt-2">Gerenciar Produtos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <!-- Inclui o arquivo JavaScript específico do dashboard -->
+    <script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+{% endblock %}

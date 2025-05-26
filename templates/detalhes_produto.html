@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}{{ produto.nome }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('listar_produtos') }}">Produtos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ produto.nome }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Galeria de Imagens -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', filename='img/produtos/' + (imagens[0].imagem_path if imagens else 'default.png')) }}" 
+                         class="img-fluid produto-img-principal" alt="{{ produto.nome }}" style="max-height: 400px;">
+                </div>
+            </div>
+            
+            {% if imagens|length > 1 %}
+            <div class="d-flex flex-wrap gap-2">
+                {% for imagem in imagens %}
+                <a href="{{ url_for('static', filename='img/produtos/' + imagem.imagem_path) }}" 
+                   class="produto-thumb {% if loop.first %}active{% endif %}" 
+                   data-image="{{ url_for('static', filename='img/produtos/' + imagem.imagem_path) }}">
+                    <img src="{{ url_for('static', filename='img/produtos/' + imagem.imagem_path) }}" 
+                         class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;" 
+                         alt="{{ produto.nome }}">
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Informações do Produto -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">{{ produto.nome }}</h2>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-2">
+                            {% set rating = produto.avaliacao or 0 %}
+                            {% for i in range(1, 6) %}
+                                {% if rating >= i %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% elif rating >= i-0.5 %}
+                                    <i class="bi bi-star-half text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">({{ produto.total_avaliacoes or 0 }} avaliações)</small>
+                    </div>
+
+                    <h3 class="text-primary mb-3">R$ {{ "%.2f"|format(produto.preco) }}</h3>
+
+                    <div class="mb-4">
+                        <h5>Descrição</h5>
+                        <p class="card-text">{{ produto.descricao }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Disponibilidade</h5>
+                        {% if produto.estoque > 0 %}
+                            <span class="text-success"><i class="bi bi-check-circle"></i> Em estoque ({{ produto.estoque }} unidades)</span>
+                        {% else %}
+                            <span class="text-danger"><i class="bi bi-x-circle"></i> Indisponível</span>
+                        {% endif %}
+                    </div>
+
+                    {% if produto.estoque > 0 %}
+                    <form class="product-actions">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <label for="quantidade" class="col-form-label">Quantidade:</label>
+                            </div>
+                            <div class="col-auto">
+                                <div class="input-group" style="width: 120px;">
+                                    <button class="btn btn-outline-secondary btn-quantidade btn-minus" type="button">-</button>
+                                    <input type="number" class="form-control text-center quantidade-input" 
+                                           value="1" min="1" max="{{ produto.estoque }}" id="quantidade">
+                                    <button class="btn btn-outline-secondary btn-quantidade btn-plus" type="button">+</button>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-primary btn-lg btn-add-to-cart" 
+                                        data-product-id="{{ produto.id }}">
+                                    <i class="bi bi-cart-plus"></i> Adicionar ao Carrinho
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Avaliações do Produto -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-star-fill"></i> Avaliações</h5>
+                {% if pode_avaliar %}
+                <a href="{{ url_for('avaliar_produto', produto_id=produto.id) }}" class="btn btn-light btn-sm">
+                    <i class="bi bi-pencil"></i> Avaliar este produto
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center border-end">
+                    <div class="display-4 text-primary mb-2">{{ "%.1f"|format(produto.avaliacao or 0) }}</div>
+                    <div class="mb-3">
+                        {% for i in range(1, 6) %}
+                            {% if (produto.avaliacao or 0) >= i %}
+                                <i class="bi bi-star-fill text-warning" style="font-size: 1.5rem;"></i>
+                            {% elif (produto.avaliacao or 0) >= i-0.5 %}
+                                <i class="bi bi-star-half text-warning" style="font-size: 1.5rem;"></i>
+                            {% else %}
+                                <i class="bi bi-star text-warning" style="font-size: 1.5rem;"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="text-muted">{{ produto.total_avaliacoes or 0 }} avaliações</div>
+                </div>
+                
+                <div class="col-md-8">
+                    {% if avaliacoes %}
+                        {% for avaliacao in avaliacoes %}
+                        <div class="mb-4 pb-3 border-bottom avaliacao-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <strong>{{ avaliacao.usuario_nome }}</strong>
+                                    <div class="d-inline-block ms-2">
+                                        {% for i in range(1, 6) %}
+                                            {% if avaliacao.nota >= i %}
+                                                <i class="bi bi-star-fill text-warning"></i>
+                                            {% else %}
+                                                <i class="bi bi-star text-warning"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ avaliacao.data_avaliacao|format_datetime('%d/%m/%Y') }}</small>
+                            </div>
+                            {% if avaliacao.comentario %}
+                            <p class="mb-0">{{ avaliacao.comentario }}</p>
+                            {% else %}
+                            <p class="text-muted mb-0">Sem comentário</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        {% if produto.total_avaliacoes > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-outline-primary">Ver todas as avaliações</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-star" style="font-size: 2rem;"></i>
+                            <h5 class="mt-2">Este produto ainda não foi avaliado</h5>
+                            <p class="text-muted">Seja o primeiro a avaliar este produto</p>
+                            {% if 'usuario_id' not in session %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary">
+                                Faça login para avaliar
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Galeria de imagens
+// Galeria de imagens
+document.querySelectorAll('.produto-thumb').forEach(thumb => {
+    thumb.addEventListener('click', function(e) {
+        e.preventDefault();
+        const mainImage = document.querySelector('.produto-img-principal');
+        const newSrc = this.getAttribute('data-image');
+        
+        if (newSrc) {
+            mainImage.classList.add('fade-out');
+            setTimeout(() => {
+                mainImage.src = newSrc;
+                mainImage.classList.remove('fade-out');
+                mainImage.classList.add('fade-in');
+                setTimeout(() => mainImage.classList.remove('fade-in'), 300);
+            }, 200);
+        }
+        
+        document.querySelectorAll('.produto-thumb').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+// Seletor de quantidade
+document.querySelectorAll('.btn-quantidade').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const input = this.closest('.input-group').querySelector('.quantidade-input');
+        let value = parseInt(input.value) || 0;
+        
+        if (this.classList.contains('btn-minus') && value > 1) {
+            value--;
+        } else if (this.classList.contains('btn-plus') && value < produtoEstoque) {
+            value++;
+        }
+        
+        input.value = value;
+    });
+});
+
+// Adicionar ao carrinho
+document.querySelector('.btn-add-to-cart')?.addEventListener('click', async function() {
+    const productId = this.dataset.productId;
+    const quantity = parseInt(document.querySelector('.quantidade-input').value) || 1;
+    
+    // Feedback visual
+    const originalHTML = this.innerHTML;
+    this.innerHTML = `
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Processando...
+    `;
+    this.disabled = true;
+    
+    try {
+        const response = await fetch(`/adicionar-carrinho/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `quantidade=${quantity}`
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar toast de sucesso
+            const toastElement = document.getElementById('toastCarrinho');
+            const toastBody = toastElement.querySelector('.toast-body');
+            toastBody.textContent = data.message;
+            
+            // Configurar toast
+            const toast = new bootstrap.Toast(toastElement, {
+                animation: true,
+                autohide: true,
+                delay: 3000
+            });
+            toast.show();
+            
+            // Atualizar contador do carrinho
+            document.dispatchEvent(new Event('carrinhoUpdated'));
+        } else {
+            // Mostrar mensagem de erro
+            const toastElement = document.getElementById('toastError');
+            const toastBody = toastElement.querySelector('.toast-body');
+            toastBody.textContent = data.message || 'Erro ao adicionar ao carrinho';
+            
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        const toastElement = document.getElementById('toastError');
+        const toastBody = toastElement.querySelector('.toast-body');
+        toastBody.textContent = 'Erro ao conectar com o servidor';
+        
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+    } finally {
+        this.innerHTML = originalHTML;
+        this.disabled = false;
+    }
+});
+</script>
+
+<style>
+.produto-img-principal {
+    transition: opacity 0.3s ease;
+    max-height: 400px;
+    object-fit: contain;
+}
+.fade-out {
+    opacity: 0;
+}
+.fade-in {
+    opacity: 1;
+}
+.produto-thumb {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.produto-thumb:hover {
+    transform: scale(1.05);
+}
+.produto-thumb.active {
+    border: 2px solid #0d6efd !important;
+}
+.avaliacao-card {
+    transition: transform 0.2s;
+}
+.avaliacao-card:hover {
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}

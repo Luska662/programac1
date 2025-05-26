@@ -1,0 +1,84 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.hero-section {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,.1);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: contain;
+    padding: 20px;
+}
+
+footer {
+    margin-top: auto;
+}
+
+#cart-items img {
+    max-width: 50px;
+}
+
+/* pulse animation */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Toast notification */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1100;
+}
+
+/* Sistema de avaliação */
+.rating-stars {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 2rem;
+    display: inline-block;
+}
+.rating-stars input {
+    display: none;
+}
+.rating-stars label {
+    color: #ddd;
+    cursor: pointer;
+}
+.rating-stars input:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+.rating-stars input:checked + label {
+    color: #ffc107;
+}
+
+/* Cards de avaliação */
+.avaliacao-card {
+    border-left: 4px solid #ffc107;
+    transition: transform 0.2s;
+}
+.avaliacao-card:hover {
+    transform: translateX(5px);
+}

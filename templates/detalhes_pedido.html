@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Pedido #{{ pedido.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('meus_pedidos') }}">Meus Pedidos</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Pedido #{{ pedido.id }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2">Detalhes do Pedido</h1>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Informações do Pedido</h2>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Número do Pedido</dt>
+                        <dd class="col-sm-8">#{{ pedido.id }}</dd>
+
+                        <dt class="col-sm-4">Data</dt>
+                        <dd class="col-sm-8">{{ pedido.data_pedido|format_datetime }}</dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge 
+                                {% if pedido.status == 'pendente' %}bg-warning
+                                {% elif pedido.status == 'cancelado' %}bg-danger
+                                {% elif pedido.status == 'entregue' %}bg-success
+                                {% else %}bg-info{% endif %}">
+                                {{ pedido.status|title }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4">Total</dt>
+                        <dd class="col-sm-8">R$ {{ "%.2f"|format(pedido.total) }}</dd>
+
+                        <dt class="col-sm-4">Forma de Pagamento</dt>
+                        <dd class="col-sm-8">{{ pedido.forma_pagamento|title }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Endereço de Entrega</h2>
+                </div>
+                <div class="card-body">
+                    <address>
+                        {{ pedido.endereco_entrega|replace('\n', '<br>')|safe }}
+                    </address>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0">Itens do Pedido</h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th class="text-center">Quantidade</th>
+                                    <th class="text-end">Preço Unitário</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.imagem_path %}
+                                            <img src="{{ url_for('static', filename='img/produtos/' + item.imagem_path) }}" 
+                                                 alt="{{ item.nome }}" 
+                                                 class="img-thumbnail me-3" 
+                                                 style="width: 60px; height: 60px; object-fit: contain;">
+                                            {% endif %}
+                                            <div>
+                                                <h3 class="h6 mb-1">{{ item.nome }}</h3>
+                                                <p class="small text-muted mb-0">{{ item.descricao|truncate(100) }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ item.quantidade }}</td>
+                                    <td class="text-end">R$ {{ "%.2f"|format(item.preco_unitario) }}</td>
+                                    <td class="text-end">R$ {{ "%.2f"|format(item.quantidade * item.preco_unitario) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end fw-bold">Total do Pedido:</td>
+                                    <td class="text-end fw-bold">R$ {{ "%.2f"|format(pedido.total) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if pedido.status == 'pendente' %}
+    <div class="row mt-4">
+        <div class="col text-end">
+            <form method="POST" action="{{ url_for('cancelar_pedido', pedido_id=pedido.id) }}" class="d-inline">
+                <button type="submit" class="btn btn-danger" 
+                        onclick="return confirm('Tem certeza que deseja cancelar este pedido?')">
+                    <i class="bi bi-x-circle"></i> Cancelar Pedido
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+[file content end]

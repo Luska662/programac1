@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="bi bi-star-fill"></i> Avaliar Produto</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-2">
+                    <img src="{{ url_for('static', filename='img/produtos/' + produto.imagem_principal) }}" 
+                         class="img-fluid rounded" alt="{{ produto.nome }}">
+                </div>
+                <div class="col-md-10">
+                    <h5>{{ produto.nome }}</h5>
+                    <p class="text-muted">{{ produto.descricao }}</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('salvar_avaliacao', produto_id=produto.id) }}">
+                <div class="mb-3">
+                    <label class="form-label">Sua avaliação</label>
+                    <div class="rating-stars mb-2">
+                        {% for i in range(5, 0, -1) %}
+                        <input type="radio" id="star{{ i }}" name="nota" value="{{ i }}" 
+                               {% if i == 3 %}checked{% endif %}>
+                        <label for="star{{ i }}" class="bi bi-star-fill"></label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="comentario" class="form-label">Comentário (opcional)</label>
+                    <textarea class="form-control" id="comentario" name="comentario" 
+                              rows="3" maxlength="500"></textarea>
+                </div>
+                
+                <input type="hidden" name="pedido_id" value="{{ pedido_id }}">
+                
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('detalhes_produto', id=produto.id) }}" 
+                       class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Enviar Avaliação
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.rating-stars {
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 2rem;
+    display: inline-block;
+}
+.rating-stars input {
+    display: none;
+}
+.rating-stars label {
+    color: #ddd;
+    cursor: pointer;
+}
+.rating-stars input:checked ~ label,
+.rating-stars label:hover,
+.rating-stars label:hover ~ label {
+    color: #ffc107;
+}
+.rating-stars input:checked + label {
+    color: #ffc107;
+}
+</style>
+{% endblock %}
